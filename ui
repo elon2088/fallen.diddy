@@ -1,0 +1,696 @@
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Frame.Position = UDim2.new(0.2, 0, 0.2, 0)
+Frame.Size = UDim2.new(0, 685, 0, 581)
+Frame.BorderColor3 = Color3.new(0, 0, 0)
+
+-- Thin blue outline bars around the Frame
+local function createBorder(pos, size)
+	local border = Instance.new("Frame", Frame)
+	border.Position = pos
+	border.Size = size
+	border.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+	border.BorderColor3 = Color3.new(0, 0, 0)
+end
+
+createBorder(UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 0, 1))   -- Top
+createBorder(UDim2.new(0, 0, 0, 0), UDim2.new(0, 1, 1, 0))   -- Left
+createBorder(UDim2.new(0, 0, 1, -1), UDim2.new(1, 0, 0, 1))  -- Bottom
+createBorder(UDim2.new(1, -1, 0, 0), UDim2.new(0, 1, 1, 0))  -- Right
+
+-- Titlebar
+local TitleBar = Instance.new("Frame", Frame)
+TitleBar.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+TitleBar.BorderColor3 = Color3.new(0, 0, 0)
+TitleBar.BorderSizePixel = 1
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.Size = UDim2.new(1, 0, 0, 18)
+
+local TitleText = Instance.new("TextLabel", TitleBar)
+TitleText.Text = "chinkware"
+TitleText.Font = Enum.Font.RobotoMono
+TitleText.TextColor3 = Color3.new(1, 1, 1)
+TitleText.TextStrokeTransparency = 0
+TitleText.TextSize = 14
+TitleText.Position = UDim2.new(0, 5, 0, 0)
+TitleText.Size = UDim2.new(0, 200, 1, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Holder Frame for content below titlebar
+local Holder = Instance.new("Frame", Frame)
+Holder.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- slightly darker background
+Holder.BorderSizePixel = 0
+Holder.Position = UDim2.new(0, 0, 0, 18)
+Holder.Size = UDim2.new(1, 0, 1, -18)
+
+-- Tabs
+local tabYOffset = 5
+local tabs = {}
+local selectedTab = nil
+
+local function createTab(text)
+	local btn = Instance.new("TextButton", Holder)
+	btn.Position = UDim2.new(0, (#tabs) * 110 + 10, 0, tabYOffset)
+	btn.Size = UDim2.new(0, 100, 0, 24)
+	btn.Text = text
+	btn.Font = Enum.Font.RobotoMono
+	btn.TextSize = 13
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	btn.BorderColor3 = Color3.new(0, 0, 0)
+
+	btn.AutoButtonColor = false -- disable default highlight
+
+	btn.MouseButton1Click:Connect(function()
+		for _, b in pairs(tabs) do
+			b.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		end
+		btn.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+		selectedTab = text
+	end)
+
+	tabs[#tabs + 1] = btn
+	return btn
+end
+
+local tab1 = createTab("Test")
+local tab2 = createTab("Test 2")
+selectedTab = "Test"
+tab1.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+
+local yOffset = 40
+
+-- Toggles container for positioning
+local TogglesFrame = Instance.new("Frame", Holder)
+TogglesFrame.BackgroundTransparency = 1
+TogglesFrame.Position = UDim2.new(0, 10, 0, yOffset)
+TogglesFrame.Size = UDim2.new(1, -20, 0, 60)
+
+-- Toggle creator with checkbox on left, text right, outline white
+local function createToggle(parent, text, withKeybind, withColorPicker)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(1, 0, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local box = Instance.new("Frame", frame)
+	box.Size = UDim2.new(0, 18, 0, 18)
+	box.Position = UDim2.new(0, 0, 0, 3)
+	box.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	box.BorderColor3 = Color3.new(1, 1, 1)
+	box.BorderSizePixel = 1
+
+	local fill = Instance.new("Frame", box)
+	fill.Size = UDim2.new(1, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+	fill.BorderSizePixel = 0
+	fill.Visible = false
+	fill.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Position = UDim2.new(0, 25, 0, 0)
+	label.Size = UDim2.new(0, 180, 1, 0)
+	label.Font = Enum.Font.RobotoMono
+	label.Text = text
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	-- Keybind picker button (optional)
+	local keybindBtn
+	if withKeybind then
+		keybindBtn = Instance.new("TextButton", frame)
+		keybindBtn.Size = UDim2.new(0, 50, 0, 18)
+		keybindBtn.Position = UDim2.new(0, 210, 0, 3)
+		keybindBtn.Text = "[None]"
+		keybindBtn.Font = Enum.Font.RobotoMono
+		keybindBtn.TextSize = 12
+		keybindBtn.TextColor3 = Color3.new(1, 1, 1)
+		keybindBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		keybindBtn.BorderColor3 = Color3.new(0, 0, 0)
+		keybindBtn.AutoButtonColor = false
+
+		local picking = false
+		keybindBtn.MouseButton1Click:Connect(function()
+			if picking then return end
+			picking = true
+			keybindBtn.Text = "Press Key"
+			local connection
+			connection = UserInputService.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.Keyboard then
+					keybindBtn.Text = "[" .. input.KeyCode.Name .. "]"
+					picking = false
+					connection:Disconnect()
+				end
+			end)
+		end)
+	end
+
+	-- Color picker placeholder (optional)
+	local colorPicker
+	if withColorPicker then
+		colorPicker = Instance.new("TextButton", frame)
+		colorPicker.Size = UDim2.new(0, 50, 0, 18)
+		colorPicker.Position = UDim2.new(0, 210, 0, 3)
+		colorPicker.Text = "[Color]"
+		colorPicker.Font = Enum.Font.RobotoMono
+		colorPicker.TextSize = 12
+		colorPicker.TextColor3 = Color3.new(1, 1, 1)
+		colorPicker.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		colorPicker.BorderColor3 = Color3.new(0, 0, 0)
+		colorPicker.AutoButtonColor = false
+
+		-- Placeholder for actual color picker functionality
+		colorPicker.MouseButton1Click:Connect(function()
+			print("Color picker clicked for "..text)
+		end)
+	end
+
+	box.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			local toggled = not fill.Visible
+			fill.Visible = toggled
+			local targetTransparency = toggled and 0 or 1
+			TweenService:Create(fill, TweenInfo.new(0.15), {BackgroundTransparency = targetTransparency}):Play()
+			print(text .. " toggled: " .. tostring(toggled))
+		end
+	end)
+
+	return frame
+end
+
+local toggle1 = createToggle(TogglesFrame, "Toggle 1", true, false)
+toggle1.Position = UDim2.new(0, 0, 0, 0)
+
+local toggle2 = createToggle(TogglesFrame, "Toggle 2", false, true)
+toggle2.Position = UDim2.new(0, 0, 0, 28)
+
+yOffset = yOffset + 60
+
+-- Slider container
+local SlidersFrame = Instance.new("Frame", Holder)
+SlidersFrame.BackgroundTransparency = 1
+SlidersFrame.Position = UDim2.new(0, 10, 0, yOffset)
+SlidersFrame.Size = UDim2.new(1, -20, 0, 80)
+
+-- Slider creator
+local function createSlider(parent, text, minValue, maxValue)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(1, 0, 0, 40)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 0, 18)
+	label.Text = text
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local valueLabel = Instance.new("TextLabel", frame)
+	valueLabel.Position = UDim2.new(1, -50, 0, 0)
+	valueLabel.Size = UDim2.new(0, 50, 0, 18)
+	valueLabel.Text = "0 / 100"
+	valueLabel.Font = Enum.Font.RobotoMono
+	valueLabel.TextSize = 14
+	valueLabel.TextColor3 = Color3.new(1, 1, 1)
+	valueLabel.BackgroundTransparency = 1
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+	local sliderBg = Instance.new("Frame", frame)
+	sliderBg.Position = UDim2.new(0, 0, 0, 20)
+	sliderBg.Size = UDim2.new(1, -60, 0, 12)
+	sliderBg.BackgroundColor3 = Color3.new(0, 0, 0)
+	sliderBg.BorderColor3 = Color3.new(0, 0, 0)
+
+	local sliderFill = Instance.new("Frame", sliderBg)
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+	sliderFill.BorderSizePixel = 0
+
+	local draggingSlider = false
+
+	sliderBg.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			draggingSlider = true
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			draggingSlider = false
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local relativeX = math.clamp(input.Position.X - sliderBg.AbsolutePosition.X, 0, sliderBg.AbsoluteSize.X)
+			local percent = relativeX / sliderBg.AbsoluteSize.X
+			local value = math.floor(minValue + (maxValue - minValue) * percent)
+			valueLabel.Text = tostring(value) .. " / " .. tostring(maxValue)
+			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+		end
+	end)
+
+	return frame
+end
+
+local slider1 = createSlider(SlidersFrame, "Slider 1", 0, 100)
+slider1.Position = UDim2.new(0, 0, 0, 0)
+
+local slider2 = createSlider(SlidersFrame, "Slider 2", 0, 100)
+slider2.Position = UDim2.new(0, 0, 0, 40)
+
+yOffset = yOffset + 80
+
+-- Dropdown container
+local DropdownsFrame = Instance.new("Frame", Holder)
+DropdownsFrame.BackgroundTransparency = 1
+DropdownsFrame.Position = UDim2.new(0, 10, 0, yOffset)
+DropdownsFrame.Size = UDim2.new(1, -20, 0, 100)
+
+-- Dropdown function (single-select)
+local function createDropdown(parent, labelText, options)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(0, 200, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Text = labelText
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 1, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local dropdownBtn = Instance.new("TextButton", frame)
+	dropdownBtn.Size = UDim2.new(0, 100, 1, 0)
+	dropdownBtn.Position = UDim2.new(0, 100, 0, 0)
+	dropdownBtn.Text = "Select"
+	dropdownBtn.Font = Enum.Font.RobotoMono
+	dropdownBtn.TextSize = 14
+	dropdownBtn.TextColor3 = Color3.new(1, 1, 1)
+	dropdownBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	dropdownBtn.BorderColor3 = Color3.new(0, 0, 0)
+
+	local dropdownList = Instance.new("Frame", frame)
+	dropdownList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	dropdownList.BorderColor3 = Color3.new(0, 0, 0)
+	dropdownList.Position = UDim2.new(0, 0, 1, 2)
+	dropdownList.Size = UDim2.new(0, 200, 0, 0)
+	dropdownList.ClipsDescendants = true
+	dropdownList.Visible = false
+
+	local uiListLayout = Instance.new("UIListLayout", dropdownList)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	uiListLayout.Padding = UDim.new(0, 2)
+
+	for _, option in ipairs(options) do
+		local optionBtn = Instance.new("TextButton", dropdownList)
+		optionBtn.Size = UDim2.new(1, 0, 0, 20)
+		optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		optionBtn.BorderColor3 = Color3.new(0, 0, 0)
+		optionBtn.TextColor3 = Color3.new(1, 1, 1)
+		optionBtn.Text = option
+		optionBtn.Font = Enum.Font.RobotoMono
+		optionBtn.TextSize = 13
+
+		optionBtn.MouseButton1Click:Connect(function()
+			dropdownBtn.Text = option
+			dropdownList.Visible = false
+			dropdownList.Size = UDim2.new(0, 200, 0, 0)
+		end)
+	end
+
+	dropdownBtn.MouseButton1Click:Connect(function()
+		dropdownList.Visible = not dropdownList.Visible
+		if dropdownList.Visible then
+			local count = #options
+			local targetHeight = math.min(count * 22, 120)
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, targetHeight), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		else
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		end
+	end)
+
+	return frame
+end
+
+local dropdown1 = createDropdown(DropdownsFrame, "Dropdown 1:", {"Option 1", "Option 2", "Option 3"})
+dropdown1.Position = UDim2.new(0, 0, 0, 0)
+
+-- Multi-select dropdown
+local function createMultiDropdown(parent, labelText, options)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(0, 200, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Text = labelText
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 1, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local dropdownBtn = Instance.new("TextButton", frame)
+	dropdownBtn.Size = UDim2.new(0, 100, 1, 0)
+	dropdownBtn.Position = UDim2.new(0, 100, 0, 0)
+	dropdownBtn.Text = "Select"
+	dropdownBtn.Font = Enum.Font.RobotoMono
+	dropdownBtn.TextSize = 14
+	dropdownBtn.TextColor3 = Color3.new(1, 1, 1)
+	dropdownBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	dropdownBtn.BorderColor3 = Color3.new(0, 0, 0)
+
+	local dropdownList = Instance.new("Frame", frame)
+	dropdownList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	dropdownList.BorderColor3 = Color3.new(0, 0, 0)
+	dropdownList.Position = UDim2.new(0, 0, 1, 2)
+	dropdownList.Size = UDim2.new(0, 200, 0, 0)
+	dropdownList.ClipsDescendants = true
+	dropdownList.Visible = false
+
+	local uiListLayout = Instance.new("UIListLayout", dropdownList)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	uiListLayout.Padding = UDim.new(0, 2)
+
+	local selected = {}
+
+	for _, option in ipairs(options) do
+		local optionBtn = Instance.new("TextButton", dropdownList)
+		optionBtn.Size = UDim2.new(1, 0, 0, 20)
+		optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		optionBtn.BorderColor3 = Color3.new(0, 0, 0)
+		optionBtn.TextColor3 = Color3.new(1, 1, 1)
+		optionBtn.Text = option
+		optionBtn.Font = Enum.Font.RobotoMono
+		optionBtn.TextSize = 13
+
+		optionBtn.MouseButton1Click:Connect(function()
+			if selected[option] then
+				selected[option] = nil
+				optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			else
+				selected[option] = true
+				optionBtn.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+			end
+			-- Update button text
+			local keys = {}
+			for k in pairs(selected) do
+				table.insert(keys, k)
+			end
+			dropdownBtn.Text = #keys > 0 and table.concat(keys, ", ") or "Select"
+		end)
+	end
+
+	dropdownBtn.MouseButton1Click:Connect(function()
+		dropdownList.Visible = not dropdownList.Visible
+		if dropdownList.Visible then
+			local count = #options
+			local targetHeight = math.min(count * 22, 120)
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, targetHeight), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		else
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		end
+	end)
+
+	return frame
+end
+
+local multiDropdown1 = createMultiDropdown(DropdownsFrame, "Multi Select:", {"One", "Two", "Three", "Four"})
+multiDropdown1.Position = UDim2.new(0, 210, 0, 0)
+
+-- Update yOffset for next sections
+yOffset = yOffset + 120
+
+``````lua
+-- Full optimized GUI with sliders, dropdown, and multi-select dropdown
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CustomGUI"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local Holder = Instance.new("Frame", ScreenGui)
+Holder.Size = UDim2.new(0, 450, 0, 280)
+Holder.Position = UDim2.new(0.5, -225, 0.5, -140)
+Holder.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Holder.BorderColor3 = Color3.fromRGB(10, 10, 10)
+Holder.Active = true
+Holder.Draggable = true
+
+local yOffset = 10
+
+-- Slider constructor
+local function createSlider(parent, labelText, minValue, maxValue)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(0, 200, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Text = labelText
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 1, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local sliderBg = Instance.new("Frame", frame)
+	sliderBg.Size = UDim2.new(0, 100, 0, 14)
+	sliderBg.Position = UDim2.new(0, 100, 0, 5)
+	sliderBg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	sliderBg.BorderColor3 = Color3.new(0, 0, 0)
+
+	local sliderFill = Instance.new("Frame", sliderBg)
+	sliderFill.Size = UDim2.new(0, 0, 1, 0)
+	sliderFill.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+
+	local valueLabel = Instance.new("TextLabel", frame)
+	valueLabel.Text = tostring(minValue) .. " / " .. tostring(maxValue)
+	valueLabel.Font = Enum.Font.RobotoMono
+	valueLabel.TextSize = 12
+	valueLabel.TextColor3 = Color3.new(1, 1, 1)
+	valueLabel.BackgroundTransparency = 1
+	valueLabel.Position = UDim2.new(0, 205, 0, 0)
+	valueLabel.Size = UDim2.new(0, 60, 1, 0)
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local dragging = false
+
+	sliderBg.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+		end
+	end)
+
+	sliderBg.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+
+	sliderBg.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local relativeX = math.clamp(input.Position.X - sliderBg.AbsolutePosition.X, 0, sliderBg.AbsoluteSize.X)
+			local percent = relativeX / sliderBg.AbsoluteSize.X
+			local value = math.floor(minValue + (maxValue - minValue) * percent)
+			valueLabel.Text = tostring(value) .. " / " .. tostring(maxValue)
+			sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+		end
+	end)
+
+	return frame
+end
+
+local SlidersFrame = Instance.new("Frame", Holder)
+SlidersFrame.BackgroundTransparency = 1
+SlidersFrame.Position = UDim2.new(0, 10, 0, yOffset)
+SlidersFrame.Size = UDim2.new(1, -20, 0, 80)
+
+local slider1 = createSlider(SlidersFrame, "Slider 1", 0, 100)
+slider1.Position = UDim2.new(0, 0, 0, 0)
+
+local slider2 = createSlider(SlidersFrame, "Slider 2", 0, 100)
+slider2.Position = UDim2.new(0, 0, 0, 40)
+
+yOffset = yOffset + 80
+
+local DropdownsFrame = Instance.new("Frame", Holder)
+DropdownsFrame.BackgroundTransparency = 1
+DropdownsFrame.Position = UDim2.new(0, 10, 0, yOffset)
+DropdownsFrame.Size = UDim2.new(1, -20, 0, 100)
+
+-- Single-select dropdown
+local function createDropdown(parent, labelText, options)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(0, 200, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Text = labelText
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 1, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local dropdownBtn = Instance.new("TextButton", frame)
+	dropdownBtn.Size = UDim2.new(0, 100, 1, 0)
+	dropdownBtn.Position = UDim2.new(0, 100, 0, 0)
+	dropdownBtn.Text = "Select"
+	dropdownBtn.Font = Enum.Font.RobotoMono
+	dropdownBtn.TextSize = 14
+	dropdownBtn.TextColor3 = Color3.new(1, 1, 1)
+	dropdownBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	dropdownBtn.BorderColor3 = Color3.new(0, 0, 0)
+
+	local dropdownList = Instance.new("Frame", frame)
+	dropdownList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	dropdownList.BorderColor3 = Color3.new(0, 0, 0)
+	dropdownList.Position = UDim2.new(0, 0, 1, 2)
+	dropdownList.Size = UDim2.new(0, 200, 0, 0)
+	dropdownList.ClipsDescendants = true
+	dropdownList.Visible = false
+
+	local uiListLayout = Instance.new("UIListLayout", dropdownList)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	uiListLayout.Padding = UDim.new(0, 2)
+
+	for _, option in ipairs(options) do
+		local optionBtn = Instance.new("TextButton", dropdownList)
+		optionBtn.Size = UDim2.new(1, 0, 0, 20)
+		optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		optionBtn.BorderColor3 = Color3.new(0, 0, 0)
+		optionBtn.TextColor3 = Color3.new(1, 1, 1)
+		optionBtn.Text = option
+		optionBtn.Font = Enum.Font.RobotoMono
+		optionBtn.TextSize = 13
+
+		optionBtn.MouseButton1Click:Connect(function()
+			dropdownBtn.Text = option
+			dropdownList.Visible = false
+			dropdownList.Size = UDim2.new(0, 200, 0, 0)
+		end)
+	end
+
+	dropdownBtn.MouseButton1Click:Connect(function()
+		dropdownList.Visible = not dropdownList.Visible
+		if dropdownList.Visible then
+			local count = #options
+			local targetHeight = math.min(count * 22, 120)
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, targetHeight), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		else
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		end
+	end)
+
+	return frame
+end
+
+local dropdown1 = createDropdown(DropdownsFrame, "Dropdown 1:", {"Option 1", "Option 2", "Option 3"})
+dropdown1.Position = UDim2.new(0, 0, 0, 0)
+
+-- Multi-select dropdown
+local function createMultiDropdown(parent, labelText, options)
+	local frame = Instance.new("Frame", parent)
+	frame.Size = UDim2.new(0, 200, 0, 24)
+	frame.BackgroundTransparency = 1
+
+	local label = Instance.new("TextLabel", frame)
+	label.Text = labelText
+	label.Font = Enum.Font.RobotoMono
+	label.TextSize = 14
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.Size = UDim2.new(0, 100, 1, 0)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local dropdownBtn = Instance.new("TextButton", frame)
+	dropdownBtn.Size = UDim2.new(0, 100, 1, 0)
+	dropdownBtn.Position = UDim2.new(0, 100, 0, 0)
+	dropdownBtn.Text = "Select"
+	dropdownBtn.Font = Enum.Font.RobotoMono
+	dropdownBtn.TextSize = 14
+	dropdownBtn.TextColor3 = Color3.new(1, 1, 1)
+	dropdownBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	dropdownBtn.BorderColor3 = Color3.new(0, 0, 0)
+
+	local dropdownList = Instance.new("Frame", frame)
+	dropdownList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	dropdownList.BorderColor3 = Color3.new(0, 0, 0)
+	dropdownList.Position = UDim2.new(0, 0, 1, 2)
+	dropdownList.Size = UDim2.new(0, 200, 0, 0)
+	dropdownList.ClipsDescendants = true
+	dropdownList.Visible = false
+
+	local uiListLayout = Instance.new("UIListLayout", dropdownList)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	uiListLayout.Padding = UDim.new(0, 2)
+
+	local selected = {}
+
+	for _, option in ipairs(options) do
+		local optionBtn = Instance.new("TextButton", dropdownList)
+		optionBtn.Size = UDim2.new(1, 0, 0, 20)
+		optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		optionBtn.BorderColor3 = Color3.new(0, 0, 0)
+		optionBtn.TextColor3 = Color3.new(1, 1, 1)
+		optionBtn.Text = option
+		optionBtn.Font = Enum.Font.RobotoMono
+		optionBtn.TextSize = 13
+
+		optionBtn.MouseButton1Click:Connect(function()
+			if selected[option] then
+				selected[option] = nil
+				optionBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+			else
+				selected[option] = true
+				optionBtn.BackgroundColor3 = Color3.fromRGB(26, 76, 193)
+			end
+			local keys = {}
+			for k in pairs(selected) do
+				table.insert(keys, k)
+			end
+			dropdownBtn.Text = #keys > 0 and table.concat(keys, ", ") or "Select"
+		end)
+	end
+
+	dropdownBtn.MouseButton1Click:Connect(function()
+		dropdownList.Visible = not dropdownList.Visible
+		if dropdownList.Visible then
+			local count = #options
+			local targetHeight = math.min(count * 22, 120)
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, targetHeight), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		else
+			dropdownList:TweenSize(UDim2.new(0, 200, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+		end
+	end)
+
+	return frame
+end
+
+local multiDropdown1 = createMultiDropdown(DropdownsFrame, "Multi Select:", {"One", "Two", "Three", "Four"})
+multiDropdown1.Position = UDim2.new(0, 210, 0, 0)
+
+-- yOffset update for future GUI sections
+yOffset = yOffset + 120
