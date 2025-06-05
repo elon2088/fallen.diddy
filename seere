@@ -1,5 +1,5 @@
-if not isfile("vertical") then
-    makefolder("vertical")
+if not isfile("Chinkware") then
+    makefolder("Chinkware")
 end
 
 
