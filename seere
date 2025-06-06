@@ -1734,7 +1734,7 @@ function library:createConfig()
             jig[i] = v
         end
     end
-    writefile("vertical/"..name..".cfg",game:GetService("HttpService"):JSONEncode(jig))
+    writefile("Chinkware"..name..".cfg",game:GetService("HttpService"):JSONEncode(jig))
     library:refreshConfigs()
 end
 
@@ -1751,16 +1751,16 @@ function library:saveConfig()
             jig[i] = v
         end
     end
-    writefile("vertical/"..name,game:GetService("HttpService"):JSONEncode(jig))
+    writefile("Chinkware"..name,game:GetService("HttpService"):JSONEncode(jig))
     library:refreshConfigs()
 end
 
 function library:loadConfig()
     local name = library.flags["selected_config"]
-    if not isfile("vertical/"..name) then
+    if not isfile("Chinkware"..name) then
         return
     end
-    local config = game:GetService("HttpService"):JSONDecode(readfile("vertical/"..name))
+    local config = game:GetService("HttpService"):JSONDecode(readfile("Chinkware"..name))
     for i,v in next, library.options do
         spawn(function()pcall(function()
             if config[i] then
@@ -1797,7 +1797,7 @@ function library:refreshConfigs()
         if option.type == "cfg" then
             if typeof(option.refresh) == "function" then
                 local configs = {}
-                for i,v in ipairs(listfiles("vertical")) do
+                for i,v in ipairs(listfiles("Chinkware")) do
                     local name = v:match("^.+\\(.+)$")
                     table.insert(configs, name)
                 end
@@ -1808,8 +1808,8 @@ function library:refreshConfigs()
 end
 
 function library:deleteConfig()
-    if isfile("vertical/"..library.flags["selected_config"]) then
-        delfile("vertical/"..library.flags["selected_config"])
+    if isfile("Chinkware"..library.flags["selected_config"]) then
+        delfile("Chinkware"..library.flags["selected_config"])
         library:refreshConfigs()
     end
 end
