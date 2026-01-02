@@ -1,4 +1,3 @@
--- Seere Fixed + Watermark + Keybindlist (Modded by Assembledd)
 
 local inputService   = UserSettings().GetService(game, "UserInputService")
 local runService     = UserSettings().GetService(game, "RunService")
