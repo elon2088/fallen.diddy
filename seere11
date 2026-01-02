@@ -312,7 +312,7 @@ function library:addTab(name)
 
         groupCount -= 1
 
-        groupbox.Parent = newTab[pos]
+        groupbox.Parent = newTab[pos == 0 and "left" or "right"]
         groupbox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         groupbox.BorderColor3 = Color3.fromRGB(30, 30, 30)
         groupbox.BorderSizePixel = 2
