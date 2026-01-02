@@ -1,16 +1,53 @@
-if not isfile("Chinkware") then makefolder("Chinkware") end
+
+if not isfile("Chinkware") then
+    makefolder("Chinkware")
+end
 
 local inputService = game:GetService("UserInputService")
-local runService    = game:GetService("RunService")
-local tweenService  = game:GetService("TweenService")
-local players       = game:GetService("Players")
-local localPlayer   = players.LocalPlayer
-local mouse         = localPlayer:GetMouse()
+local runService   = game:GetService("RunService")
+local tweenService = game:GetService("TweenService")
+local players      = game:GetService("Players")
+local localPlayer  = players.LocalPlayer
+local mouse        = localPlayer:GetMouse()
 
 getgenv().menu = game:GetObjects("rbxassetid://12702460854")[1]
 
 menu.bg.Position = UDim2.new(0.5, -menu.bg.Size.X.Offset/2, 0.5, -menu.bg.Size.Y.Offset/2)
 menu.Parent = game:GetService("CoreGui")
+
+-- Define gradients BEFORE library table and functions
+local ColorPicker_Gradients = {
+    Menu_Outline = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(127, 110, 234))
+    },
+    Tab_Underline = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 34, 34)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(127, 110, 234)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(34, 34, 34))
+    },
+    GroupBoxs_Underline = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 34, 34)),
+        ColorSequenceKeypoint.new(0.10, Color3.fromRGB(127, 110, 234)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(127, 110, 234)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(34, 34, 34))
+    },
+    Slider = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(100, 100, 100)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(75, 75, 75))
+    },
+    ColorPicker = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(75, 75, 75)),
+        ColorSequenceKeypoint.new(0.320, Color3.fromRGB(100, 100, 100)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    },
+    Toggle = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(75, 75, 75)),
+        ColorSequenceKeypoint.new(0.320, Color3.fromRGB(100, 100, 100)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    },
+}
 
 getgenv().library = {
     colorpicking = false,
@@ -29,8 +66,8 @@ getgenv().library = {
         Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D,
         Enum.UserInputType.MouseMovement
     },
-    keypickers   = {},           -- ← added for keybinds list
-    watermark    = "Chinkware | "..os.date("%I:%M %p"),  -- ← you can change this
+    keypickers   = {},
+    watermark    = "Chinkware | "..os.date("%I:%M %p")
 }
 
 local Tween = loadstring(game:HttpGet("https://pastebin.com/raw/GRtM1ysK"))()
@@ -51,9 +88,9 @@ Keybinds.TextSize = 14
 Keybinds.BackgroundTransparency = 0
 Keybinds.ZIndex = 1000
 Keybinds.Parent = menu
-Keybinds.Visible = false   -- only show when menu is open
+Keybinds.Visible = false
 
--- Watermark + animated outline
+-- Watermark
 local Watermark = Instance.new("TextLabel")
 Watermark.Name = "Watermark"
 Watermark.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -88,22 +125,23 @@ Gradient.Color = ColorSequence.new({
 Gradient.Rotation = 0
 Gradient.Parent = WatermarkOutline
 
--- Registry for color updating
+-- Registry for live color updates
 local Registry = {}
 function library:AddReg(element, properties)
     Registry[element] = properties or {"BackgroundColor3"}
 end
 
--- Update loop (keybinds + watermark + gradient animation)
+-- Main update loop
 coroutine.wrap(function()
     while task.wait() do
-        -- Only update when menu exists and is visible
-        if not menu or not menu.Parent then break end
+        if not menu or not menu.Parent then
+            break
+        end
 
         local visible = menu.Enabled
-        Keybinds.Visible           = visible
-        Watermark.Visible          = visible
-        WatermarkOutline.Visible   = visible
+        Keybinds.Visible = visible
+        Watermark.Visible = visible
+        WatermarkOutline.Visible = visible
 
         -- Keybinds text
         local entries = {}
@@ -112,9 +150,9 @@ coroutine.wrap(function()
             if v.Color then
                 line = string.format(
                     '<font color="#%02X%02X%02X">%s [%s]</font>',
-                    math.floor(v.Color.R*255),
-                    math.floor(v.Color.G*255),
-                    math.floor(v.Color.B*255),
+                    math.floor(v.Color.R * 255),
+                    math.floor(v.Color.G * 255),
+                    math.floor(v.Color.B * 255),
                     v.String,
                     v.Key and v.Key.Name or "None"
                 )
@@ -129,8 +167,6 @@ coroutine.wrap(function()
             keybindText = "Keybinds\n" .. table.concat(entries, "\n")
         end
         Keybinds.Text = keybindText
-
-        -- Auto size
         Keybinds.Size = UDim2.new(0, Keybinds.TextBounds.X + 20, 0, Keybinds.TextBounds.Y + 8)
 
         -- Watermark
@@ -138,10 +174,10 @@ coroutine.wrap(function()
         Watermark.Size = UDim2.new(0, Watermark.TextBounds.X + 10, 0, Watermark.TextBounds.Y + 10)
         WatermarkOutline.Size = UDim2.new(0, Watermark.TextBounds.X + 14, 0, Watermark.TextBounds.Y + 14)
 
-        -- Rainbow gradient animation
+        -- Animated gradient
         Gradient.Rotation = (Gradient.Rotation + 0.8) % 360
 
-        -- Update registered elements
+        -- Sync registered elements
         for element, props in Registry do
             if element and element.Parent then
                 for _, prop in props do
@@ -154,7 +190,7 @@ coroutine.wrap(function()
     end
 end)()
 
--- Make draggable
+-- Draggable function
 local function draggable(frame)
     local dragging, dragInput, dragStart, startPos
 
