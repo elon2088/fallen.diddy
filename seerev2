@@ -1,72 +1,42 @@
 -- Seere Fixed + Watermark + Keybindlist (Modded by Assembledd)
--- With added watermark & keybinds list toggles
 
-local inputService = UserSettings():GetService("UserInputService")
-local runService    = UserSettings():GetService("RunService")
-local tweenService  = UserSettings():GetService("TweenService")
-local players       = UserSettings():GetService("Players")
-local localPlayer   = players.LocalPlayer
-local mouse         = localPlayer:GetMouse()
-local Camera        = workspace.Camera
+local inputService   = UserSettings().GetService(game, "UserInputService")
+local runService     = UserSettings().GetService(game, "RunService")
+local tweenService   = UserSettings().GetService(game, "TweenService")
+local players        = UserSettings().GetService(game, "Players")
+local localPlayer    = players.LocalPlayer
+local mouse          = localPlayer:GetMouse()
+local Camera         = workspace.Camera
 
-local menu = game:GetObjects("rbxassetid://12702460854")[1]
-menu.bg.Position = UDim2.new(0.5, -menu.bg.Size.X.Offset/2, 0.5, -menu.bg.Size.Y.Offset/2)
-menu.Parent = game:GetService("CoreGui")
+local menu           = game:GetObjects("rbxassetid://12702460854")[1]
+menu.bg.Position     = UDim2.new(0.5,-menu.bg.Size.X.Offset/2,0.5,-menu.bg.Size.Y.Offset/2)
+menu.Parent          = UserSettings().GetService(game, "CoreGui")
 
 local library = {
-    cheatname       = "",
-    watermark       = "",
-    ext             = "",
-    gamename        = "",
-    colorpicking    = false,
-    keypickers      = {},
-    tabbuttons      = {},
-    tabs            = {},
-    options         = {},
-    flags           = {},
-    scrolling       = false,
-    playing         = false,
-    multiZindex     = 200,
-    toInvis         = {},
-    librarycolor    = Color3.fromRGB(240, 142, 214),
-    disabledcolor   = Color3.fromRGB(233, 0, 0),
-    blacklisted     = {Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.UserInputType.MouseMovement},
-
-    -- new toggles
-    watermarkEnabled = true,
-    keybindsEnabled  = true,
+    cheatname = ""; 
+    watermark = "";
+    ext = "";
+    gamename = "";
+    colorpicking = false;
+    keypickers = {}; 
+    tabbuttons = {};
+    tabs = {};
+    options = {};
+    flags = {};
+    scrolling = false;
+    playing = false;
+    multiZindex = 200;
+    toInvis = {};
+    librarycolor = Color3.fromRGB(240, 142, 214);
+    disabledcolor = Color3.fromRGB(233, 0, 0);
+    blacklisted = {Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.UserInputType.MouseMovement}
 }
 
-if not isfolder("Chinkware") then makefolder("Chinkware") end
-
-local function draggable(a)
-    local b = inputService
-    local c, d, e, f
-    local function g(h)
-        if not library.colorpicking then
-            local i = h.Position - e
-            a.Position = UDim2.new(f.X.Scale, f.X.Offset + i.X, f.Y.Scale, f.Y.Offset + i.Y)
-        end
-    end
-    a.InputBegan:Connect(function(h)
-        if h.UserInputType == Enum.UserInputType.MouseButton1 or h.UserInputType == Enum.UserInputType.Touch then
-            c = true
-            e = h.Position
-            f = a.Position
-            h.Changed:Connect(function()
-                if h.UserInputState == Enum.UserInputState.End then c = false end
-            end)
-        end
-    end)
-    a.InputChanged:Connect(function(h)
-        if h.UserInputType == Enum.UserInputType.MouseMovement or h.UserInputType == Enum.UserInputType.Touch then
-            d = h
-        end
-    end)
-    b.InputChanged:Connect(function(h)
-        if h == d and c then g(h) end
-    end)
+if not isfile("Chinkware") then
+    makefolder("Chinkware")
 end
+
+function draggable(a)local b=inputService;local c;local d;local e;local f;local function g(h)if not library.colorpicking then local i=h.Position-e;a.Position=UDim2.new(f.X.Scale,f.X.Offset+i.X,f.Y.Scale,f.Y.Offset+i.Y)end end;a.InputBegan:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseButton1 or h.UserInputType==Enum.UserInputType.Touch then c=true;e=h.Position;f=a.Position;h.Changed:Connect(function()if h.UserInputState==Enum.UserInputState.End then c=false end end)end end)a.InputChanged:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseMovement or h.UserInputType==Enum.UserInputType.Touch then d=h end end)b.InputChanged:Connect(function(h)if h==d and c then g(h)end end)end
 draggable(menu.bg)
 
 local tabholder = menu.bg.bg.bg.bg.main.group
@@ -77,76 +47,88 @@ inputService.InputEnded:Connect(function(key)
         menu.Enabled = not menu.Enabled
         library.scrolling = false
         library.colorpicking = false
-        for _, v in next, library.toInvis do v.Visible = false end
+        for i,v in next, library.toInvis do
+            v.Visible = false
+        end
     end
 end)
 
 local keyNames = {
-    [Enum.KeyCode.LeftAlt]     = "LALT",
-    [Enum.KeyCode.RightAlt]    = "RALT",
-    [Enum.KeyCode.LeftControl] = "LCTRL",
-    [Enum.KeyCode.RightControl]= "RCTRL",
-    [Enum.KeyCode.LeftShift]   = "LSHIFT",
-    [Enum.KeyCode.RightShift]  = "RSHIFT",
-    [Enum.KeyCode.Underscore]  = "_",
-    [Enum.KeyCode.Minus]       = "-",
-    [Enum.KeyCode.Plus]        = "+",
-    [Enum.KeyCode.Period]      = ".",
-    [Enum.KeyCode.Slash]       = "/",
-    [Enum.KeyCode.BackSlash]   = "\\",
-    [Enum.KeyCode.Question]    = "?",
-    [Enum.UserInputType.MouseButton1] = "MB1",
-    [Enum.UserInputType.MouseButton2] = "MB2",
-    [Enum.UserInputType.MouseButton3] = "MB3",
+    [Enum.KeyCode.LeftAlt] = 'LALT';
+    [Enum.KeyCode.RightAlt] = 'RALT';
+    [Enum.KeyCode.LeftControl] = 'LCTRL';
+    [Enum.KeyCode.RightControl] = 'RCTRL';
+    [Enum.KeyCode.LeftShift] = 'LSHIFT';
+    [Enum.KeyCode.RightShift] = 'RSHIFT';
+    [Enum.KeyCode.Underscore] = '_';
+    [Enum.KeyCode.Minus] = '-';
+    [Enum.KeyCode.Plus] = '+';
+    [Enum.KeyCode.Period] = '.';
+    [Enum.KeyCode.Slash] = '/';
+    [Enum.KeyCode.BackSlash] = '\\';
+    [Enum.KeyCode.Question] = '?';
+    [Enum.UserInputType.MouseButton1] = 'MB1';
+    [Enum.UserInputType.MouseButton2] = 'MB2';
+    [Enum.UserInputType.MouseButton3] = 'MB3';
 }
 
-function library:Tween(...) tweenService:Create(...):Play() end
+function library:Tween(...)
+    tweenService:Create(...):Play()
+end
+local Notifications = {}
 
--- ────────────────────────────────────────────────────────────────────────────────
---  Watermark & Keybinds list (with toggles)
--- ────────────────────────────────────────────────────────────────────────────────
+local function UpdateNotifications()
+    for i,v in Notifications do
+        if v.Text then
+            v.Text.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 1.6 + (i - 1) * 20)
+        end
+    end
+end
 
-local Ex = Instance.new("ScreenGui", menu.Parent)
+local Ex = Instance.new("GuiMain", menu.Parent)
 Ex.Name = tostring(math.random())
-Ex.ResetOnSpawn = false
+
+--/ KeybindList
 
 local Keybinds = Instance.new("TextLabel")
-Keybinds.BorderSizePixel   = 1
-Keybinds.BorderColor3      = Color3.fromRGB(35,35,35)
-Keybinds.BackgroundColor3  = Color3.fromRGB(10,10,10)
-Keybinds.Text              = "Keybinds"
-Keybinds.TextColor3        = Color3.fromRGB(255,255,255)
-Keybinds.Font              = Enum.Font.Code
-Keybinds.RichText          = true
-Keybinds.AnchorPoint       = Vector2.new(0, 0.5)
-Keybinds.Position          = UDim2.new(0.03, 0, 0.5, 0)
-Keybinds.TextSize          = 14
+Keybinds.BorderSizePixel = 1
+Keybinds.BorderColor3 = Color3.fromRGB(35,35,35)
+Keybinds.BackgroundColor3 = Color3.fromRGB(10,10,10)
+Keybinds.Text = "Keybinds"
+Keybinds.TextColor3 = Color3.fromRGB(255,255,255)
+Keybinds.Font = Enum.Font.Code
+Keybinds.RichText = true
+Keybinds.AnchorPoint = Vector2.new(0,0.5)
+Keybinds.Position = UDim2.new(0.03,0,0.5,0)
+Keybinds.TextSize = 14
 Keybinds.BackgroundTransparency = 0
-Keybinds.ZIndex            = 1000
-Keybinds.Parent            = Ex
+Keybinds.ZIndex = 1000
+Keybinds.Parent = Ex
+
+--/ Watermark
 
 local Watermark = Instance.new("TextLabel")
-Watermark.AnchorPoint      = Vector2.new(0.5, 0.5)
-Watermark.BorderSizePixel  = 1
-Watermark.BorderColor3     = Color3.fromRGB(35,35,35)
+Watermark.AnchorPoint = Vector2.new(0.5,0.5)
+Watermark.BorderSizePixel = 1
+Watermark.BorderColor3 = Color3.fromRGB(35,35,35)
 Watermark.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Watermark.Position         = UDim2.new(0.5, 0, 0, 20)
-Watermark.Text             = library.watermark
-Watermark.TextColor3       = Color3.fromRGB(255,255,255)
-Watermark.Font             = Enum.Font.Code
-Watermark.TextSize         = 14
+Watermark.Position =  UDim2.new(0.5,0,0,0)
+Watermark.Text = library.watermark
+Watermark.TextColor3 = Color3.fromRGB(255,255,255)
+Watermark.Font = Enum.Font.Code
+Watermark.TextSize = 14
 Watermark.BackgroundTransparency = 0
-Watermark.ZIndex           = 1000
-Watermark.Parent           = Ex
+Watermark.ZIndex = 1000
+Watermark.Parent = Ex
 
 local WatermarkOutline = Instance.new("TextLabel")
-WatermarkOutline.AnchorPoint      = Vector2.new(0.5, 0.5)
-WatermarkOutline.BorderSizePixel  = 0
-WatermarkOutline.Position         = UDim2.new(0.5, 0, 0, 20)
-WatermarkOutline.Text             = ""
+WatermarkOutline.AnchorPoint = Vector2.new(0.5,0.5)
+WatermarkOutline.BorderSizePixel = 0
+WatermarkOutline.Position =  UDim2.new(0.5,0,0,0)
+WatermarkOutline.Text = ""
 WatermarkOutline.BackgroundTransparency = 0
-WatermarkOutline.ZIndex           = 900
-WatermarkOutline.Parent           = Ex
+WatermarkOutline.ZIndex = 900
+WatermarkOutline.Parent = Ex
 
 local Gradient = Instance.new("UIGradient")
 Gradient.Color = ColorSequence.new({
@@ -155,74 +137,70 @@ Gradient.Color = ColorSequence.new({
 })
 Gradient.Parent = WatermarkOutline
 
--- ────────────────────────────────────────────────────────────────────────────────
---  Main update loop
--- ────────────────────────────────────────────────────────────────────────────────
-
 local Registry = {}
-function library:AddReg(Element, Tbl) Registry[Element] = Tbl end
+function library:AddReg(Element, Tbl)
+    Registry[Element] = Tbl
+end
 
 menu.Name = tostring(math.random())
 
 local function CTH(Color)
-    return string.format("#%02X%02X%02X", Color.R*255, Color.G*255, Color.B*255)
+    return string.format("#%02X%02X%02X", Color.R * 255, Color.G * 255, Color.B * 255)
 end
 
 coroutine.wrap(function()
     while task.wait() do
-        if menu.bg and menu.bg:FindFirstChild("pre") then
+        if (menu:FindFirstChild("bg") and menu.bg:FindFirstChild("pre")) and (menu.bg.pre.Text ~= "" or menu.bg.pre.Text ~= library.cheatname) then
             menu.bg.pre.Text = library.cheatname
         end
-
-        -- Keybinds list
         local KeybindString = "Keybinds"
         local Entries = {}
-        for _, v in library.keypickers do
-            local line = v.String .. " [" .. (v.Key or "None") .. "]"
+
+        for i,v in library.keypickers do
             if v.Color then
-                line = '<font color="' .. CTH(v.Color) .. '">' .. line .. '</font>'
+                table.insert(Entries, '<font color="' .. CTH(v.Color) .. '">' .. v.String .. " [" .. (v.Key or "None") .. ']</font>')
+            else
+                table.insert(Entries, v.String .. " [" .. (v.Key or "None") .. "]")
             end
-            table.insert(Entries, line)
         end
+
         if #Entries > 0 then
             KeybindString = "Keybinds\n" .. table.concat(Entries, "\n")
         end
 
         Keybinds.Text = KeybindString
-        Keybinds.Size = UDim2.new(0, Keybinds.TextBounds.X + 20, 0, Keybinds.TextBounds.Y + 8)
-        Keybinds.Visible = library.keybindsEnabled
+        Keybinds.Size = UDim2.new(0,Keybinds.TextBounds.X + 20,0,Keybinds.TextBounds.Y + 8)
 
-        -- Watermark
-        Watermark.Text  = library.watermark
-        Watermark.Size  = UDim2.new(0, Watermark.TextBounds.X + 10, 0, Watermark.TextBounds.Y + 10)
-        Watermark.Visible = library.watermarkEnabled
+        Watermark.Text = library.watermark
+        Watermark.Size = UDim2.new(0,Watermark.TextBounds.X + 10,0,Watermark.TextBounds.Y + 10)
 
-        WatermarkOutline.Size = UDim2.new(0, Watermark.TextBounds.X + 14, 0, Watermark.TextBounds.Y + 14)
-        WatermarkOutline.Visible = library.watermarkEnabled
-
+        WatermarkOutline.Size = UDim2.new(0,Watermark.TextBounds.X + 14,0,Watermark.TextBounds.Y + 14)
         if Gradient.Rotation > 360 then Gradient.Rotation = 0 end
         Gradient.Rotation += 0.5
-
-        for Element, Tbl in Registry do
+        for Element,Tbl in Registry do
             if table.find(Tbl, "BackgroundColor3") then
                 Element.BackgroundColor3 = library.librarycolor
             end
         end
-
-        if not menu then break end
+        if not menu then
+            break
+        end
     end
-end)()
+end)()  
 
 task.delay(0.5, function()
-    for _, v in menu.bg.bg.bg.bg.tabbuttons:GetDescendants() do
+    for i,v in menu.bg.bg.bg.bg.tabbuttons:GetDescendants() do
         if v.Name == "element" then
-            library:AddReg(v, {"BackgroundColor3"})
+            library:AddReg(v, {
+                "BackgroundColor3",
+            })
         end
     end
 end)
 
-library:AddReg(WatermarkOutline, {"BackgroundColor3"})
-
+library:AddReg(WatermarkOutline, {
+    "BackgroundColor3",
+})
 
 function library:notify(String,Color,Time)
     Time = Time or 5
@@ -1880,14 +1858,14 @@ function library:createConfig()
             jig[i] = v
         end
     end
-    writefile("Chinkware"..name..".cfg",UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
+    writefile("Chinkware/"..name..".cfg",UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
     library:notify("Succesfully created config "..name..".cfg!",Color3.fromRGB(0,255,0))
     library:refreshConfigs()
 end
 
 function library:saveConfig()
     local name = library.flags["selected_config"]
-    if name and isfile("Chinkware" .. name) then
+    if name and isfile("Chinkware/" .. name) then
         local jig = {}
         for i,v in next, library.flags do
             if library.options[i].skipflag then continue end
@@ -1899,7 +1877,7 @@ function library:saveConfig()
                 jig[i] = v
             end
         end
-        writefile("Chinkware"..name, UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
+        writefile("Chinkware/"..name, UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
         library:notify("Succesfully updated config "..name .. "!", Color3.fromRGB(0,255,0), 3)
         library:refreshConfigs()
     else
@@ -1909,11 +1887,11 @@ end
 
 function library:loadConfig()
     local name = library.flags["selected_config"]
-    if not isfile("Chinkware"..name) then
+    if not isfile("Chinkware/"..name) then
         library:notify("Invalid Config "..name .. "!", Color3.fromRGB(255,0,0), 3)
         return
     end
-    local config = UserSettings().GetService(game, "HttpService"):JSONDecode(readfile("Chinkware"..name))
+    local config = UserSettings().GetService(game, "HttpService"):JSONDecode(readfile("Chinkware/"..name))
     for i,v in next, library.options do
         spawn(function()
             pcall(function()
@@ -1956,7 +1934,7 @@ function library:refreshConfigs()
                 for i,v in ipairs(listfiles("Chinkware")) do
                     local name = v:match("^.+\\(.+)$")
                     table.insert(configs, name)
-                end
+                endF
                 option.refresh(configs)
             end
         end
@@ -1971,8 +1949,8 @@ function library:Unload()
 end
 
 function library:deleteConfig()
-    if isfile("Chinkware"..library.flags["selected_config"]) then
-        delfile("Chinkware"..library.flags["selected_config"])
+    if isfile("Chinkware/"..library.flags["selected_config"]) then
+        delfile("Chinkware/"..library.flags["selected_config"])
         library:notify("Succesfully deleted config "..library.flags["selected_config"] .. "!", Color3.fromRGB(255,0,0), 3)
         library:refreshConfigs()
     end
