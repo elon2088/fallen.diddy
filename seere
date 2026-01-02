@@ -1,58 +1,195 @@
-if not isfile("Chinkware") then
-    makefolder("Chinkware")
-end
+if not isfile("Chinkware") then makefolder("Chinkware") end
 
+local inputService = game:GetService("UserInputService")
+local runService    = game:GetService("RunService")
+local tweenService  = game:GetService("TweenService")
+local players       = game:GetService("Players")
+local localPlayer   = players.LocalPlayer
+local mouse         = localPlayer:GetMouse()
 
-function Update_Text_Bounds(rub)
-    return rub
-end
+getgenv().menu = game:GetObjects("rbxassetid://12702460854")[1]
 
-local inputService   = game:GetService("UserInputService")
-local runService     = game:GetService("RunService")
-local tweenService   = game:GetService("TweenService")
-local players        = game:GetService("Players")
-local localPlayer    = players.LocalPlayer
-local mouse          = localPlayer:GetMouse()
+menu.bg.Position = UDim2.new(0.5, -menu.bg.Size.X.Offset/2, 0.5, -menu.bg.Size.Y.Offset/2)
+menu.Parent = game:GetService("CoreGui")
 
-getgenv().menu           = game:GetObjects("rbxassetid://12702460854")[1]
-local Tween = loadstring(game:HttpGet("https://pastebin.com/raw/GRtM1ysK"))()
-local notifications1 = {}
-local notifications2 = {}
-menu.bg.Position     = UDim2.new(0.5,-menu.bg.Size.X.Offset/2,0.5,-menu.bg.Size.Y.Offset/2)
-menu.Parent          = game:GetService("CoreGui")
 getgenv().library = {
-    colorpicking = false;
-    tabbuttons = {};
-    tabs = {};
-    options = {};
-    flags = {};
-    scrolling = false;
-    playing = false;
-    multiZindex = 200;
-    toInvis = {};
-    libColor = Color3.fromRGB(127, 110, 234);
-    disabledcolor = Color3.fromRGB(233, 0, 0);
-    menubind = Enum.KeyCode.Insert;
-    blacklisted = {
-        Enum.KeyCode.W,
-        Enum.KeyCode.A,
-        Enum.KeyCode.S,
-        Enum.KeyCode.D,
+    colorpicking = false,
+    tabbuttons   = {},
+    tabs         = {},
+    options      = {},
+    flags        = {},
+    scrolling    = false,
+    playing      = false,
+    multiZindex  = 200,
+    toInvis      = {},
+    libColor     = Color3.fromRGB(127, 110, 234),
+    disabledcolor= Color3.fromRGB(233, 0, 0),
+    menubind     = Enum.KeyCode.Insert,
+    blacklisted  = {
+        Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D,
         Enum.UserInputType.MouseMovement
-    }
+    },
+    keypickers   = {},           -- ← added for keybinds list
+    watermark    = "Chinkware | "..os.date("%I:%M %p"),  -- ← you can change this
 }
 
-local library_name = menu.bg.pre.Text
-local ColorPicker_Gradients = {
-    Menu_Outline = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1, library.libColor)},
-    Tab_Underline = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(0.50, library.libColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(34, 34, 34))},
-    GroupBoxs_Underline = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 34, 34)), ColorSequenceKeypoint.new(0.10, library.libColor), ColorSequenceKeypoint.new(0.50, library.libColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(34, 34, 34))},
-    Slider = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.8, Color3.fromRGB(100, 100, 100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(75, 75, 75))},
-    ColorPicker = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(75, 75, 75)), ColorSequenceKeypoint.new(0.320, Color3.fromRGB(100, 100, 100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))},
-    Toggle = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(75, 75, 75)), ColorSequenceKeypoint.new(0.320, Color3.fromRGB(100, 100, 100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))},
-}
+local Tween = loadstring(game:HttpGet("https://pastebin.com/raw/GRtM1ysK"))()
 
-function draggable(a) local b=inputService;local c;local d;local e;local f;local function g(h)if not library.colorpicking then local i=h.Position-e;a.Position=UDim2.new(f.X.Scale,f.X.Offset+i.X,f.Y.Scale,f.Y.Offset+i.Y)end end;a.InputBegan:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseButton1 or h.UserInputType==Enum.UserInputType.Touch then c=true;e=h.Position;f=a.Position;h.Changed:Connect(function()if h.UserInputState==Enum.UserInputState.End then c=false end end)end end)a.InputChanged:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseMovement or h.UserInputType==Enum.UserInputType.Touch then d=h end end)b.InputChanged:Connect(function(h)if h==d and c then g(h)end end)end
+-- Keybinds list
+local Keybinds = Instance.new("TextLabel")
+Keybinds.Name = "Keybinds"
+Keybinds.BorderSizePixel = 1
+Keybinds.BorderColor3 = Color3.fromRGB(35,35,35)
+Keybinds.BackgroundColor3 = Color3.fromRGB(10,10,10)
+Keybinds.Text = "Keybinds"
+Keybinds.TextColor3 = Color3.fromRGB(255,255,255)
+Keybinds.Font = Enum.Font.Code
+Keybinds.RichText = true
+Keybinds.AnchorPoint = Vector2.new(0, 0.5)
+Keybinds.Position = UDim2.new(0.03, 0, 0.5, 0)
+Keybinds.TextSize = 14
+Keybinds.BackgroundTransparency = 0
+Keybinds.ZIndex = 1000
+Keybinds.Parent = menu
+Keybinds.Visible = false   -- only show when menu is open
+
+-- Watermark + animated outline
+local Watermark = Instance.new("TextLabel")
+Watermark.Name = "Watermark"
+Watermark.AnchorPoint = Vector2.new(0.5, 0.5)
+Watermark.BorderSizePixel = 1
+Watermark.BorderColor3 = Color3.fromRGB(35,35,35)
+Watermark.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Watermark.Position = UDim2.new(0.5, 0, 0, 16)
+Watermark.Text = library.watermark
+Watermark.TextColor3 = Color3.fromRGB(255,255,255)
+Watermark.Font = Enum.Font.Code
+Watermark.TextSize = 14
+Watermark.BackgroundTransparency = 0
+Watermark.ZIndex = 1000
+Watermark.Parent = menu
+Watermark.Visible = false
+
+local WatermarkOutline = Instance.new("Frame")
+WatermarkOutline.Name = "Outline"
+WatermarkOutline.AnchorPoint = Vector2.new(0.5, 0.5)
+WatermarkOutline.BorderSizePixel = 0
+WatermarkOutline.Position = UDim2.new(0.5, 0, 0, 16)
+WatermarkOutline.BackgroundTransparency = 0
+WatermarkOutline.ZIndex = 900
+WatermarkOutline.Parent = menu
+WatermarkOutline.Visible = false
+
+local Gradient = Instance.new("UIGradient")
+Gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(18,18,18)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255)),
+})
+Gradient.Rotation = 0
+Gradient.Parent = WatermarkOutline
+
+-- Registry for color updating
+local Registry = {}
+function library:AddReg(element, properties)
+    Registry[element] = properties or {"BackgroundColor3"}
+end
+
+-- Update loop (keybinds + watermark + gradient animation)
+coroutine.wrap(function()
+    while task.wait() do
+        -- Only update when menu exists and is visible
+        if not menu or not menu.Parent then break end
+
+        local visible = menu.Enabled
+        Keybinds.Visible           = visible
+        Watermark.Visible          = visible
+        WatermarkOutline.Visible   = visible
+
+        -- Keybinds text
+        local entries = {}
+        for _, v in library.keypickers do
+            local line
+            if v.Color then
+                line = string.format(
+                    '<font color="#%02X%02X%02X">%s [%s]</font>',
+                    math.floor(v.Color.R*255),
+                    math.floor(v.Color.G*255),
+                    math.floor(v.Color.B*255),
+                    v.String,
+                    v.Key and v.Key.Name or "None"
+                )
+            else
+                line = v.String .. " [" .. (v.Key and v.Key.Name or "None") .. "]"
+            end
+            table.insert(entries, line)
+        end
+
+        local keybindText = "Keybinds"
+        if #entries > 0 then
+            keybindText = "Keybinds\n" .. table.concat(entries, "\n")
+        end
+        Keybinds.Text = keybindText
+
+        -- Auto size
+        Keybinds.Size = UDim2.new(0, Keybinds.TextBounds.X + 20, 0, Keybinds.TextBounds.Y + 8)
+
+        -- Watermark
+        Watermark.Text = library.watermark
+        Watermark.Size = UDim2.new(0, Watermark.TextBounds.X + 10, 0, Watermark.TextBounds.Y + 10)
+        WatermarkOutline.Size = UDim2.new(0, Watermark.TextBounds.X + 14, 0, Watermark.TextBounds.Y + 14)
+
+        -- Rainbow gradient animation
+        Gradient.Rotation = (Gradient.Rotation + 0.8) % 360
+
+        -- Update registered elements
+        for element, props in Registry do
+            if element and element.Parent then
+                for _, prop in props do
+                    if prop == "BackgroundColor3" then
+                        element.BackgroundColor3 = library.libColor
+                    end
+                end
+            end
+        end
+    end
+end)()
+
+-- Make draggable
+local function draggable(frame)
+    local dragging, dragInput, dragStart, startPos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    inputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging and not library.colorpicking then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
 draggable(menu.bg)
 
 local tabholder = menu.bg.bg.bg.bg.main.group
