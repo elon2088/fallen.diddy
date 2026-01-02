@@ -32,8 +32,8 @@ local library = {
     blacklisted = {Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.UserInputType.MouseMovement}
 }
 
-if not isfile("Chinkware") then
-    makefolder("Chinkware")
+if not isfile("Chinaware") then
+    makefolder("Chinaware")
 end
 
 function draggable(a)local b=inputService;local c;local d;local e;local f;local function g(h)if not library.colorpicking then local i=h.Position-e;a.Position=UDim2.new(f.X.Scale,f.X.Offset+i.X,f.Y.Scale,f.Y.Offset+i.Y)end end;a.InputBegan:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseButton1 or h.UserInputType==Enum.UserInputType.Touch then c=true;e=h.Position;f=a.Position;h.Changed:Connect(function()if h.UserInputState==Enum.UserInputState.End then c=false end end)end end)a.InputChanged:Connect(function(h)if h.UserInputType==Enum.UserInputType.MouseMovement or h.UserInputType==Enum.UserInputType.Touch then d=h end end)b.InputChanged:Connect(function(h)if h==d and c then g(h)end end)end
@@ -1858,14 +1858,14 @@ function library:createConfig()
             jig[i] = v
         end
     end
-    writefile("Chinkware/"..name..".cfg",UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
+    writefile("Chinaware/"..name..".cfg",UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
     library:notify("Succesfully created config "..name..".cfg!",Color3.fromRGB(0,255,0))
     library:refreshConfigs()
 end
 
 function library:saveConfig()
     local name = library.flags["selected_config"]
-    if name and isfile("Chinkware/" .. name) then
+    if name and isfile("Chinaware/" .. name) then
         local jig = {}
         for i,v in next, library.flags do
             if library.options[i].skipflag then continue end
@@ -1877,7 +1877,7 @@ function library:saveConfig()
                 jig[i] = v
             end
         end
-        writefile("Chinkware/"..name, UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
+        writefile("Chinaware/"..name, UserSettings().GetService(game, "HttpService"):JSONEncode(jig))
         library:notify("Succesfully updated config "..name .. "!", Color3.fromRGB(0,255,0), 3)
         library:refreshConfigs()
     else
@@ -1887,11 +1887,11 @@ end
 
 function library:loadConfig()
     local name = library.flags["selected_config"]
-    if not isfile("Chinkware/"..name) then
+    if not isfile("Chinaware/"..name) then
         library:notify("Invalid Config "..name .. "!", Color3.fromRGB(255,0,0), 3)
         return
     end
-    local config = UserSettings().GetService(game, "HttpService"):JSONDecode(readfile("Chinkware/"..name))
+    local config = UserSettings().GetService(game, "HttpService"):JSONDecode(readfile("Chinaware/"..name))
     for i,v in next, library.options do
         spawn(function()
             pcall(function()
@@ -1931,10 +1931,10 @@ function library:refreshConfigs()
         if option.type == "cfg" then
             if typeof(option.refresh) == "function" then
                 local configs = {}
-                for i,v in ipairs(listfiles("Chinkware")) do
+                for i,v in ipairs(listfiles("Chinaware/")) do
                     local name = v:match("^.+\\(.+)$")
                     table.insert(configs, name)
-                endF
+                end
                 option.refresh(configs)
             end
         end
@@ -1949,8 +1949,8 @@ function library:Unload()
 end
 
 function library:deleteConfig()
-    if isfile("Chinkware/"..library.flags["selected_config"]) then
-        delfile("Chinkware/"..library.flags["selected_config"])
+    if isfile("Chinaware/"..library.flags["selected_config"]) then
+        delfile("Chinaware/"..library.flags["selected_config"])
         library:notify("Succesfully deleted config "..library.flags["selected_config"] .. "!", Color3.fromRGB(255,0,0), 3)
         library:refreshConfigs()
     end
